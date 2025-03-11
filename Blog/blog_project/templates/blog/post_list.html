@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-3">
+    <div class="card mb-4">
+        <div class="card-header">카테고리</div>
+        <div class="list-group list-group-flush">
+            <a href="{% url 'post_list' %}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
+                전체 보기
+            </a>
+            {% for cat in categories %}
+                <a href="{% url 'category_posts' cat.id %}" class="list-group-item list-group-item-action {% if category.id == cat.id %}active{% endif %}">
+                    {{ cat.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="col-md-9">
+    <h1 class="mb-4">
+        {% if category %}
+            카테고리: {{ category.name }}
+        {% else %}
+            최근 게시글
+        {% endif %}
+    </h1>
+    
+    {% for post in posts %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-secondary">{{ post.category.name }}</span>
+                        <a href="{% url 'post_detail' pk=post.pk %}" class="text-decoration-none">
+                            <h5 class="card-title mt-2 mb-0">{{ post.title }}</h5>
+                        </a>
+                    </div>
+                    <div class="text-muted small">
+                        {{ post.published_date|date:"Y년 m월 d일" }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="img-fluid mb-3" alt="{{ post.title }}">
+                {% endif %}
+                <p class="card-text">{{ post.text|linebreaksbr|truncatewords:30 }}</p>
+                <a href="{% url 'post_detail' pk=post.pk %}" class="btn btn-sm btn-outline-primary">더 읽기</a>
+                <span class="text-muted ms-2">
+                    <i class="fas fa-comment"></i> {{ post.comments.count }}
+                </span>
+            </div>
+            <div class="card-footer text-muted small">
+                작성자: {{ post.author }}
+            </div>
+        </div>
+    {% empty %}
+        <div class="alert alert-info">
+            게시글이 없습니다.
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

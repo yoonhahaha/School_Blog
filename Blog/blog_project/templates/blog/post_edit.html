@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-8 offset-md-2">
+    <div class="card">
+        <div class="card-header">
+            <h2>{% if form.instance.pk %}게시글 수정{% else %}새 게시글{% endif %}</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                    {{ form.category }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
+                    {{ form.text }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                    {{ form.image }}
+                    {% if form.instance.image %}
+                        <p class="mt-2">현재 이미지: <a href="{{ form.instance.image.url }}" target="_blank">{{ form.instance.image.name }}</a></p>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'post_list' %}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

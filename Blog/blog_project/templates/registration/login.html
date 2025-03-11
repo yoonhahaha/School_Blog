@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-6 offset-md-3">
+    <div class="card">
+        <div class="card-header">
+            <h2>로그인</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    아이디 또는 비밀번호가 일치하지 않습니다. 다시 시도해주세요.
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">아이디</label>
+                    {{ form.username }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">비밀번호</label>
+                    {{ form.password }}
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">로그인</button>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}" />
+                
+                <hr>
+                <p class="text-center">계정이 없으신가요? <a href="{% url 'signup' %}">회원가입</a></p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

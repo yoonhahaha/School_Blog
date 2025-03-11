@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-12">
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-secondary">{{ post.category.name }}</span>
+                    <h2 class="card-title mt-2 mb-0">{{ post.title }}</h2>
+                </div>
+                <div class="text-muted small">
+                    {{ post.published_date|date:"Y년 m월 d일 H:i" }}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid mb-4" alt="{{ post.title }}">
+            {% endif %}
+            <p class="card-text">{{ post.text|linebreaksbr }}</p>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    작성자: {{ post.author }}
+                </div>
+                <div>
+                    {% if user.is_authenticated %}
+                        {% if not post.published_date %}
+                            <a href="{% url 'post_publish' pk=post.pk %}" class="btn btn-sm btn-success me-2">게시</a>
+                        {% endif %}
+                        <a href="{% url 'post_edit' pk=post.pk %}" class="btn btn-sm btn-primary me-2">수정</a>
+                        <a href="{% url 'post_remove' pk=post.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>댓글 ({{ post.comments.count }})</h4>
+        </div>
+        <div class="card-body">
+            <a href="{% url 'add_comment_to_post' pk=post.pk %}" class="btn btn-primary mb-3">댓글 작성</a>
+            
+            {% for comment in post.comments.all %}
+                <div class="card mb-3 {% if not comment.approved_comment %}bg-light{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="card-subtitle mb-2 text-muted">{{ comment.author }}</h6>
+                            <small class="text-muted">{{ comment.created_date|date:"Y년 m월 d일 H:i" }}</small>
+                        </div>
+                        <p class="card-text">{{ comment.text|linebreaks }}</p>
+                        
+                        {% if user.is_authenticated %}
+                            <div class="text-end">
+                                {% if not comment.approved_comment %}
+                                    <a href="{% url 'comment_approve' pk=comment.pk %}" class="btn btn-sm btn-success">승인</a>
+                                {% endif %}
+                                <a href="{% url 'comment_remove' pk=comment.pk %}" class="btn btn-sm btn-danger">삭제</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p>아직 댓글이 없습니다.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <a href="{% url 'post_list' %}" class="btn btn-secondary mb-4">목록으로 돌아가기</a>
+</div>
+{% endblock %}

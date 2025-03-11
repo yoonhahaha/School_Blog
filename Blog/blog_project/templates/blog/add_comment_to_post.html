@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-8 offset-md-2">
+    <div class="card">
+        <div class="card-header">
+            <h2>새 댓글</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.author.id_for_label }}" class="form-label">{{ form.author.label }}</label>
+                    {{ form.author }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
+                    {{ form.text }}
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'post_detail' pk=post.pk %}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
