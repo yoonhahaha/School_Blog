@@ -25,6 +25,15 @@
                     {{ form.username }}
                     <div class="form-text">필수. 150자 이하. 문자, 숫자 및 @/./+/-/_ 만 가능합니다.</div>
                 </div>
+                <!-- Add this after the username field -->
+                <div class="mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                    {{ form.last_name }}
+                </div>
                 <div class="mb-3">
                     <label for="{{ form.email.id_for_label }}" class="form-label">이메일</label>
                     {{ form.email }}

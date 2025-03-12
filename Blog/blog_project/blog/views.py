@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import Post, Comment, Category, PostImage
 from .forms import PostForm, CommentForm
+from django.db import models
 
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')
@@ -75,12 +76,9 @@ def add_comment_to_post(request, pk):
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
+            comment.approved_comment = True  # Auto-approve comments
             comment.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        form = CommentForm()
-    return render(request, 'blog/add_comment_to_post.html', {'form': form})
-
+    return redirect('post_detail', pk=post.pk)
 @csrf_exempt
 @login_required
 def comment_approve(request, pk):
@@ -102,3 +100,22 @@ def category_posts(request, category_id):
     posts = Post.objects.filter(category=category, published_date__lte=timezone.now()).order_by('-published_date')
     categories = Category.objects.all()
     return render(request, 'blog/post_list.html', {'posts': posts, 'categories': categories, 'category': category})
+@csrf_exempt
+def search_results(request):
+    query = request.GET.get('q', '')
+    if query:
+        posts = Post.objects.filter(
+            models.Q(title__icontains=query) | 
+            models.Q(text__icontains=query) |
+            models.Q(author__username__icontains=query) |
+            models.Q(category__name__icontains=query)
+        ).filter(published_date__lte=timezone.now()).order_by('-published_date')
+    else:
+        posts = Post.objects.none()
+    
+    categories = Category.objects.all()
+    return render(request, 'blog/search_results.html', {
+        'posts': posts, 
+        'categories': categories, 
+        'query': query
+    })

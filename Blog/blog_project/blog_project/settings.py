@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -106,3 +107,10 @@ LOGOUT_REDIRECT_URL = '/'
 
 SESSION_COOKIE_SAMESITE = 'Lax'  # Try 'None' if using HTTPS
 CSRF_COOKIE_SAMESITE = 'Lax'
+
+
+# Add this to settings.py
+SECURE_SSL_REDIRECT = False  # Set to True in production
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 0  # Set to non-zero in production
