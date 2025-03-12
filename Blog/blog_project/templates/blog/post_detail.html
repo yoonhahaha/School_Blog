@@ -15,10 +15,62 @@
             </div>
         </div>
         <div class="card-body">
-            {% if post.image %}
-                <img src="{{ post.image.url }}" class="img-fluid mb-4" alt="{{ post.title }}">
+            <!-- Multiple images carousel -->
+            {% if post.images.all %}
+                <div id="postImagesCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        {% for img in post.images.all %}
+                            <button type="button" data-bs-target="#postImagesCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                                {% if forloop.first %}class="active"{% endif %}></button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        {% for img in post.images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ post.title }} 이미지">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">이전</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">다음</span>
+                    </button>
+                </div>
             {% endif %}
+            
             <p class="card-text">{{ post.text|linebreaksbr }}</p>
+            
+            <!-- Map if location is available -->
+            {% if post.latitude and post.longitude %}
+                <div class="mt-4">
+                    <h5>위치</h5>
+                    <div id="map" style="height: 300px; width: 100%;" class="mb-3"></div>
+                </div>
+                
+                <!-- Include Leaflet CSS and JS -->
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                
+                <script>
+                    function initMap() {
+                        const location = [{{ post.latitude }}, {{ post.longitude }}];
+                        const map = L.map('map').setView(location, 15);
+                        
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+                        
+                        L.marker(location).addTo(map);
+                    }
+                    
+                    // Initialize map when DOM is loaded
+                    document.addEventListener('DOMContentLoaded', initMap);
+                </script>
+            {% endif %}
         </div>
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">

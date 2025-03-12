@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Post, Comment, Category
+from .models import Post, Comment, Category, PostImage
 from .forms import PostForm, CommentForm
 
 def post_list(request):
@@ -23,6 +23,11 @@ def post_new(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            
+            # Save multiple images
+            for image in request.FILES.getlist('images'):
+                PostImage.objects.create(post=post, image=image)
+                
             return redirect('post_detail', pk=post.pk)
     else:
         form = PostForm()
@@ -38,10 +43,15 @@ def post_edit(request, pk):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            
+            # Handle new image uploads
+            for image in request.FILES.getlist('images'):
+                PostImage.objects.create(post=post, image=image)
+                
             return redirect('post_detail', pk=post.pk)
     else:
         form = PostForm(instance=post)
-    return render(request, 'blog/post_edit.html', {'form': form})
+    return render(request, 'blog/post_edit.html', {'form': form, 'post': post})
 
 @csrf_exempt
 @login_required

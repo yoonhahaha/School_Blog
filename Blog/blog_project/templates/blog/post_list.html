@@ -42,10 +42,18 @@
                 </div>
             </div>
             <div class="card-body">
-                {% if post.image %}
-                    <img src="{{ post.image.url }}" class="img-fluid mb-3" alt="{{ post.title }}">
+                {% if post.images.first %}
+                    <img src="{{ post.images.first.image.url }}" class="img-fluid mb-3" alt="{{ post.title }}">
+                {% endif %}
+                {% if post.images.count > 1 %}
+                    <p class="text-muted">이미지 {{ post.images.count }}개</p>
                 {% endif %}
                 <p class="card-text">{{ post.text|linebreaksbr|truncatewords:30 }}</p>
+                
+                {% if post.latitude and post.longitude %}
+                    <p><i class="fas fa-map-marker-alt"></i> 위치 정보 있음</p>
+                {% endif %}
+                
                 <a href="{% url 'post_detail' pk=post.pk %}" class="btn btn-sm btn-outline-primary">더 읽기</a>
                 <span class="text-muted ms-2">
                     <i class="fas fa-comment"></i> {{ post.comments.count }}

@@ -21,7 +21,10 @@ class Post(models.Model):
     text = models.TextField(verbose_name='내용')
     created_date = models.DateTimeField(default=timezone.now, verbose_name='작성일')
     published_date = models.DateTimeField(blank=True, null=True, verbose_name='게시일')
-    image = models.ImageField(upload_to='blog/%Y/%m/%d/', blank=True, null=True, verbose_name='이미지')
+    # Remove single image field
+    # Add location fields
+    latitude = models.FloatField(blank=True, null=True, verbose_name='위도')
+    longitude = models.FloatField(blank=True, null=True, verbose_name='경도')
     
     def publish(self):
         self.published_date = timezone.now()
@@ -33,6 +36,18 @@ class Post(models.Model):
     class Meta:
         verbose_name = '게시글'
         verbose_name_plural = '게시글'
+
+
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', verbose_name='게시글')
+    image = models.ImageField(upload_to='blog/%Y/%m/%d/', verbose_name='이미지')
+    
+    def __str__(self):
+        return f"{self.post.title}의 이미지"
+    
+    class Meta:
+        verbose_name = '게시글 이미지'
+        verbose_name_plural = '게시글 이미지'
 
 
 class Comment(models.Model):
@@ -52,3 +67,4 @@ class Comment(models.Model):
     class Meta:
         verbose_name = '댓글'
         verbose_name_plural = '댓글'
+
