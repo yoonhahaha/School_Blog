@@ -33,7 +33,7 @@ class PostForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
-            'due_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
         labels = {
             'category': '카테고리',
