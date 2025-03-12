@@ -5,6 +5,9 @@ class PostImageInline(admin.TabularInline):
     model = PostImage
     extra = 3
 
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'enable_map', 'enable_due_date', 'enable_photo', 'enable_time')
+    list_editable = ('enable_map', 'enable_due_date', 'enable_photo', 'enable_time')
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'created_date', 'published_date', 'due_date')
     list_filter = ('created_date', 'published_date', 'due_date', 'author')
@@ -19,5 +22,5 @@ class CommentAdmin(admin.ModelAdmin):
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Comment, CommentAdmin)
-admin.site.register(Category)
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(PostImage)

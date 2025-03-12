@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Post, Comment, Category, PostImage
 from .forms import PostForm, CommentForm
 from django.db import models
-
+from django.http import JsonResponse
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')
     categories = Category.objects.all()
@@ -23,6 +23,17 @@ def post_new(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+            
+            # Handle category-based settings
+            category = form.cleaned_data.get('category')
+            if category:
+                if not category.enable_map:
+                    post.latitude = None
+                    post.longitude = None
+                
+                if not category.enable_due_date:
+                    post.due_date = None
+            
             post.save()
             
             # Save multiple images
@@ -43,6 +54,17 @@ def post_edit(request, pk):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+            
+            # Handle category-based settings
+            category = form.cleaned_data.get('category')
+            if category:
+                if not category.enable_map:
+                    post.latitude = None
+                    post.longitude = None
+                
+                if not category.enable_due_date:
+                    post.due_date = None
+            
             post.save()
             
             # Handle new image uploads
@@ -79,6 +101,7 @@ def add_comment_to_post(request, pk):
             comment.approved_comment = True  # Auto-approve comments
             comment.save()
     return redirect('post_detail', pk=post.pk)
+
 @csrf_exempt
 @login_required
 def comment_approve(request, pk):
@@ -100,6 +123,7 @@ def category_posts(request, category_id):
     posts = Post.objects.filter(category=category, published_date__lte=timezone.now()).order_by('-published_date')
     categories = Category.objects.all()
     return render(request, 'blog/post_list.html', {'posts': posts, 'categories': categories, 'category': category})
+
 @csrf_exempt
 def search_results(request):
     query = request.GET.get('q', '')
@@ -118,4 +142,16 @@ def search_results(request):
         'posts': posts, 
         'categories': categories, 
         'query': query
+    })
+
+
+
+@csrf_exempt
+def category_settings(request, category_id):
+    category = get_object_or_404(Category, pk=category_id)
+    return JsonResponse({
+        'enable_map': category.enable_map,
+        'enable_due_date': category.enable_due_date,
+        'enable_photo': category.enable_photo,
+        'enable_time': category.enable_time
     })

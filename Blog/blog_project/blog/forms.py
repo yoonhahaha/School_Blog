@@ -33,14 +33,26 @@ class PostForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
-            'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'due_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
         labels = {
             'category': '카테고리',
             'title': '제목',
             'text': '내용',
-            'due_date': '마감일',
+            'due_date': '마감일시',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+        
+        if instance and instance.pk and instance.category:
+            if not instance.category.enable_map:
+                self.fields['latitude'].widget = forms.HiddenInput()
+                self.fields['longitude'].widget = forms.HiddenInput()
+            
+            if not instance.category.enable_due_date:
+                self.fields['due_date'].widget = forms.HiddenInput()
 
 class CommentForm(forms.ModelForm):
     class Meta:

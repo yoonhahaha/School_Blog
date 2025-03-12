@@ -5,6 +5,10 @@ from django.utils import timezone
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='카테고리')
+    enable_map = models.BooleanField(default=True, verbose_name='지도 활성화')
+    enable_due_date = models.BooleanField(default=True, verbose_name='마감일 활성화')
+    enable_photo = models.BooleanField(default=True, verbose_name='사진 활성화')
+    enable_time = models.BooleanField(default=True, verbose_name='시간 활성화')
     
     def __str__(self):
         return self.name
@@ -23,7 +27,7 @@ class Post(models.Model):
     published_date = models.DateTimeField(blank=True, null=True, verbose_name='게시일')
     latitude = models.FloatField(blank=True, null=True, verbose_name='위도')
     longitude = models.FloatField(blank=True, null=True, verbose_name='경도')
-    due_date = models.DateTimeField(blank=True, null=True, verbose_name='마감일')
+    due_date = models.DateTimeField(blank=True, null=True, verbose_name='마감일시')
     
     def publish(self):
         self.published_date = timezone.now()

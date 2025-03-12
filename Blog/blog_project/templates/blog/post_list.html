@@ -32,9 +32,9 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="badge bg-secondary">{{ post.category.name }}</span>
-                        {% if post.due_date %}
+                        {% if post.due_date and post.category.enable_due_date %}
                         <span class="badge bg-warning text-dark ms-2">
-                            <i class="fas fa-clock"></i> 일자: {{ post.due_date|date:"Y년 m월 d일" }}
+                            <i class="fas fa-clock"></i> 일시: {{ post.due_date|date:"Y년 m월 d일 H:i" }}
                         </span>
                         {% endif %}
                         <a href="{% url 'post_detail' pk=post.pk %}" class="text-decoration-none">
@@ -55,7 +55,7 @@
                 {% endif %}
                 <p class="card-text">{{ post.text|linebreaksbr|truncatewords:30 }}</p>
                 
-                {% if post.latitude and post.longitude %}
+                {% if post.latitude and post.longitude and post.category.enable_map %}
                     <p><i class="fas fa-map-marker-alt"></i> 위치 정보 있음</p>
                 {% endif %}
                 

@@ -21,27 +21,34 @@
                     <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
                     {{ form.text }}
                 </div>
-                <div class="mb-3">
+                
+                {% if not form.instance.pk or form.instance.category.enable_photo %}
+                <div class="mb-3 photo-field">
                     <label for="{{ form.images.id_for_label }}" class="form-label">이미지 (여러 장 선택 가능)</label>
                     {{ form.images }}
                 </div>
+                {% endif %}
                 
-                <div class="mb-3">
+                {% if not form.instance.pk or form.instance.category.enable_due_date %}
+                <div class="mb-3 due-date-field">
                     <label for="{{ form.due_date.id_for_label }}" class="form-label">{{ form.due_date.label }}</label>
                     {{ form.due_date }}
-                    <div class="form-text">선택사항입니다. 게시글의 마감일을 설정할 수 있습니다.</div>
+                    <div class="form-text">선택사항입니다. 게시글의 마감일시를 설정할 수 있습니다.</div>
                 </div>
+                {% endif %}
                 
+                {% if not form.instance.pk or form.instance.category.enable_map %}
                 <!-- Location Map Section -->
-                <div class="mb-3">
+                <div class="mb-3 map-field">
                     <label class="form-label">위치</label>
                     <div id="map" style="height: 300px; width: 100%;" class="mb-2"></div>
                     <button type="button" class="btn btn-sm btn-secondary" onclick="getLocation()">현재 위치 가져오기</button>
                     {{ form.latitude }}
                     {{ form.longitude }}
                 </div>
+                {% endif %}
                 
-                {% if post %}
+                {% if post and post.category.enable_photo %}
                     <div class="mb-4">
                         <h5>현재 이미지</h5>
                         <div class="row">
@@ -144,7 +151,47 @@
         }
     }
     
+    // Add category change handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.getElementById('id_category');
+        
+        if(categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                const categoryId = this.value;
+                
+                if(categoryId) {
+                    fetch(`/category/${categoryId}/settings/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Toggle map field
+                            const mapField = document.querySelector('.map-field');
+                            if(mapField) {
+                                mapField.style.display = data.enable_map ? 'block' : 'none';
+                            }
+                            
+                            // Toggle due date field
+                            const dueDateField = document.querySelector('.due-date-field');
+                            if(dueDateField) {
+                                dueDateField.style.display = data.enable_due_date ? 'block' : 'none';
+                            }
+                            
+                            // Toggle photo field
+                            const photoField = document.querySelector('.photo-field');
+                            if(photoField) {
+                                photoField.style.display = data.enable_photo ? 'block' : 'none';
+                            }
+                        });
+                }
+            });
+        }
+    });
+    
     // Initialize map when page loads
-    window.onload = initMap;
+    window.onload = function() {
+        const mapEl = document.getElementById('map');
+        if (mapEl) {
+            initMap();
+        }
+    };
 </script>
 {% endblock %}
