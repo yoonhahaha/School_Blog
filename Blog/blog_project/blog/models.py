@@ -21,10 +21,9 @@ class Post(models.Model):
     text = models.TextField(verbose_name='내용')
     created_date = models.DateTimeField(default=timezone.now, verbose_name='작성일')
     published_date = models.DateTimeField(blank=True, null=True, verbose_name='게시일')
-    # Remove single image field
-    # Add location fields
     latitude = models.FloatField(blank=True, null=True, verbose_name='위도')
     longitude = models.FloatField(blank=True, null=True, verbose_name='경도')
+    due_date = models.DateTimeField(blank=True, null=True, verbose_name='마감일')
     
     def publish(self):
         self.published_date = timezone.now()
@@ -67,4 +66,3 @@ class Comment(models.Model):
     class Meta:
         verbose_name = '댓글'
         verbose_name_plural = '댓글'
-

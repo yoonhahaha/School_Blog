@@ -6,8 +6,8 @@ class PostImageInline(admin.TabularInline):
     extra = 3
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'created_date', 'published_date')
-    list_filter = ('created_date', 'published_date', 'author')
+    list_display = ('title', 'author', 'created_date', 'published_date', 'due_date')
+    list_filter = ('created_date', 'published_date', 'due_date', 'author')
     search_fields = ('title', 'text')
     date_hierarchy = 'created_date'
     inlines = [PostImageInline]

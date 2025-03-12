@@ -26,18 +26,20 @@ class PostForm(forms.ModelForm):
     
     class Meta:
         model = Post
-        fields = ('category', 'title', 'text', 'latitude', 'longitude')
+        fields = ('category', 'title', 'text', 'latitude', 'longitude', 'due_date')
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'text': forms.Textarea(attrs={'class': 'form-control'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
+            'due_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
         labels = {
             'category': '카테고리',
             'title': '제목',
             'text': '내용',
+            'due_date': '마감일',
         }
 
 class CommentForm(forms.ModelForm):
