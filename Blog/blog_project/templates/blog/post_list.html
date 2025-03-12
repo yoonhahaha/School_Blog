@@ -34,7 +34,10 @@
                         <span class="badge bg-secondary">{{ post.category.name }}</span>
                         {% if post.due_date and post.category.enable_due_date %}
                         <span class="badge bg-warning text-dark ms-2">
-                            <i class="fas fa-clock"></i> 일시: {{ post.due_date|date:"Y년 m월 d일 H:i" }}
+                            <i class="fas fa-calendar"></i> {{ post.due_date|date:"Y년 m월 d일" }}
+                            {% if post.category.enable_time %}
+                            <i class="fas fa-clock ms-1"></i> {{ post.due_date|date:"H:i" }}
+                            {% endif %}
                         </span>
                         {% endif %}
                         <a href="{% url 'post_detail' pk=post.pk %}" class="text-decoration-none">

@@ -180,9 +180,27 @@
                             if(photoField) {
                                 photoField.style.display = data.enable_photo ? 'block' : 'none';
                             }
+                            
+                            // Toggle time display in due date field
+                            const dueDateInput = document.getElementById('id_due_date');
+                            if(dueDateInput && data.enable_due_date) {
+                                if(data.enable_time) {
+                                    dueDateInput.type = 'datetime-local';
+                                    dueDateInput.nextElementSibling.textContent = '선택사항입니다. 게시글의 마감일시를 설정할 수 있습니다.';
+                                } else {
+                                    dueDateInput.type = 'date';
+                                    dueDateInput.nextElementSibling.textContent = '선택사항입니다. 게시글의 마감일을 설정할 수 있습니다.';
+                                }
+                            }
                         });
                 }
             });
+            
+            // Trigger on initial load to set correct state
+            if(categorySelect.value) {
+                const event = new Event('change');
+                categorySelect.dispatchEvent(event);
+            }
         }
     });
     

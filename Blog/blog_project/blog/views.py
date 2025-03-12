@@ -6,6 +6,8 @@ from .models import Post, Comment, Category, PostImage
 from .forms import PostForm, CommentForm
 from django.db import models
 from django.http import JsonResponse
+from datetime import datetime
+
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')
     categories = Category.objects.all()
@@ -35,6 +37,14 @@ def post_new(request):
                     post.due_date = None
             
             post.save()
+            
+            # Handle time component based on category settings
+            if category and not category.enable_time and post.due_date:
+                # Set time to midnight if time is disabled
+                post.due_date = timezone.make_aware(
+                    datetime.combine(post.due_date.date(), datetime.min.time())
+                )
+                post.save()
             
             # Save multiple images
             for image in request.FILES.getlist('images'):
@@ -66,6 +76,14 @@ def post_edit(request, pk):
                     post.due_date = None
             
             post.save()
+            
+            # Handle time component based on category settings
+            if category and not category.enable_time and post.due_date:
+                # Set time to midnight if time is disabled
+                post.due_date = timezone.make_aware(
+                    datetime.combine(post.due_date.date(), datetime.min.time())
+                )
+                post.save()
             
             # Handle new image uploads
             for image in request.FILES.getlist('images'):
@@ -143,8 +161,6 @@ def search_results(request):
         'categories': categories, 
         'query': query
     })
-
-
 
 @csrf_exempt
 def category_settings(request, category_id):
