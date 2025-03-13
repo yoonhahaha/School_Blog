@@ -2,12 +2,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Post, Comment, Category, PostImage, Notification
+from .models import Post, Comment, Category, PostImage, Notification, PushSubscription
 from .forms import PostForm, CommentForm
 from django.db import models
 from django.http import JsonResponse
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.urls import reverse
+import json
+from webpush import send_user_notification
 
 @login_required
 def post_list(request):
@@ -56,10 +59,20 @@ def post_new(request):
             # Create notifications for all users except the author
             users = User.objects.exclude(id=request.user.id)
             for user in users:
+                # Create database notification
                 Notification.objects.create(
                     user=user,
                     message=f"새 게시글: {post.title}",
                     related_post=post
+                )
+                
+                # Send push notification
+                post_url = request.build_absolute_uri(reverse('post_detail', kwargs={'pk': post.pk}))
+                send_push_notification(
+                    user=user,
+                    title="새 게시글 알림",
+                    body=f"{request.user.username}님이 '{post.title}' 게시글을 작성했습니다.",
+                    url=post_url
                 )
                 
             return redirect('post_detail', pk=post.pk)
@@ -134,10 +147,20 @@ def add_comment_to_post(request, pk):
             
             # Create notification for post author
             if request.user != post.author:
+                # Create database notification
                 Notification.objects.create(
                     user=post.author,
                     message=f"{request.user.username}님이 댓글을 작성했습니다: {post.title}",
                     related_post=post
+                )
+                
+                # Send push notification
+                post_url = request.build_absolute_uri(reverse('post_detail', kwargs={'pk': post.pk}))
+                send_push_notification(
+                    user=post.author,
+                    title="새 댓글 알림",
+                    body=f"{request.user.username}님이 '{post.title}' 게시글에 댓글을 작성했습니다.",
+                    url=post_url
                 )
     return redirect('post_detail', pk=post.pk)
 
@@ -219,3 +242,49 @@ def mark_notification_read(request, pk):
 def mark_all_read(request):
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return redirect('notifications')
+
+@csrf_exempt
+@login_required
+def subscribe_push(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            subscription_info = data.get('subscription')
+            
+            # Save or update subscription
+            subscription, created = PushSubscription.objects.get_or_create(
+                user=request.user,
+                defaults={'subscription_info': subscription_info}
+            )
+            
+            if not created:
+                subscription.subscription_info = subscription_info
+                subscription.save()
+                
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+def send_push_notification(user, title, body, url):
+    """Helper function to send web push notifications"""
+    payload = {
+        'title': title,
+        'body': body,
+        'url': url
+    }
+    
+    try:
+        subscriptions = PushSubscription.objects.filter(user=user)
+        for subscription in subscriptions:
+            send_user_notification(
+                user=user,
+                payload=payload, 
+                ttl=1000,
+                subscription_info=subscription.subscription_info
+            )
+        return True
+    except Exception as e:
+        print(f"Push notification error: {str(e)}")
+        return False

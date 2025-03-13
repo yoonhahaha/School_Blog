@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog',
     'django_extensions',
+    'webpush',
 ]
 
 MIDDLEWARE = [
@@ -119,3 +120,9 @@ SECURE_HSTS_SECONDS = 0  # Set to non-zero in production
 # Add these lines to the bottom of settings.py
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds (14 days * 24 hours * 60 minutes * 60 seconds)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BLO09Ii_zOAzx_zF37YdFUvKilK0T2-QTvgr4xMxULScwwVH7vx-G3nzB4ZQVyNbTTuLPfNz-I6pLnmQnBnT_2c",
+    "VAPID_PRIVATE_KEY": "gB3aTRfIZrKSSyMFkA6yvigx2zFYjdxxYBuV8MKJ2HQ",
+    "VAPID_ADMIN_EMAIL": "admin@example.com"
+}

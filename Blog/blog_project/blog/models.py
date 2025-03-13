@@ -86,3 +86,15 @@ class Notification(models.Model):
         
     def __str__(self):
         return self.message
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='push_subscriptions', verbose_name='사용자')
+    subscription_info = models.JSONField(verbose_name='구독 정보')
+    created_date = models.DateTimeField(default=timezone.now, verbose_name='생성일')
+    
+    class Meta:
+        verbose_name = '푸시 구독'
+        verbose_name_plural = '푸시 구독'
+        
+    def __str__(self):
+        return f"{self.user.username}의 푸시 구독"

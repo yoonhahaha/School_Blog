@@ -62,5 +62,85 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% load webpush_notifications %}
+    {% webpush_header %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            // Register service worker
+            navigator.serviceWorker.register('/static/js/service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker registered');
+                    
+                    // Only proceed if user is logged in
+                    {% if user.is_authenticated %}
+                        // Check for notification permission
+                        if (Notification.permission === 'granted') {
+                            subscribeToPushNotifications(registration);
+                        } else if (Notification.permission !== 'denied') {
+                            Notification.requestPermission().then(function(permission) {
+                                if (permission === 'granted') {
+                                    subscribeToPushNotifications(registration);
+                                }
+                            });
+                        }
+                    {% endif %}
+                })
+                .catch(function(error) {
+                    console.error('Service Worker registration failed:', error);
+                });
+        }
+        
+        function subscribeToPushNotifications(registration) {
+            const vapidPublicKey = "{{ webpush_settings.VAPID_PUBLIC_KEY }}";
+            const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+            
+            registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: convertedVapidKey
+            })
+            .then(function(subscription) {
+                // Send subscription to server
+                return fetch("{% url 'subscribe_push' %}", {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        subscription: subscription.toJSON()
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log('Push notification subscription saved');
+                } else {
+                    console.error('Push subscription error:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Push subscription failed:', error);
+            });
+        }
+        
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+            
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+    });
+    </script>
 </body>
 </html>

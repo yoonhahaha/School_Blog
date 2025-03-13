@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Post, Comment, Category, PostImage, Notification
+from .models import Post, Comment, Category, PostImage, Notification, PushSubscription
 
 class PostImageInline(admin.TabularInline):
     model = PostImage
@@ -25,6 +26,14 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ('is_read', 'created_date')
     search_fields = ('user__username', 'message')
 
+
+class PushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'created_date')
+    list_filter = ('created_date',)
+    search_fields = ('user__username',)
+
+
+admin.site.register(PushSubscription, PushSubscriptionAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(Category, CategoryAdmin)
