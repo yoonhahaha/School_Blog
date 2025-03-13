@@ -14,4 +14,7 @@ urlpatterns = [
     path('category/<int:category_id>/', views.category_posts, name='category_posts'),
     path('search/', views.search_results, name='search_results'),
     path('category/<int:category_id>/settings/', views.category_settings, name='category_settings'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/<int:pk>/read/', views.mark_notification_read, name='mark_notification_read'),
+    path('notifications/mark-all-read/', views.mark_all_read, name='mark_all_read'),
 ]

@@ -2,17 +2,20 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Post, Comment, Category, PostImage
+from .models import Post, Comment, Category, PostImage, Notification
 from .forms import PostForm, CommentForm
 from django.db import models
 from django.http import JsonResponse
 from datetime import datetime
+from django.contrib.auth.models import User
 
+@login_required
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')
     categories = Category.objects.all()
     return render(request, 'blog/post_list.html', {'posts': posts, 'categories': categories})
 
+@login_required
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     return render(request, 'blog/post_detail.html', {'post': post})
@@ -49,6 +52,15 @@ def post_new(request):
             # Save multiple images
             for image in request.FILES.getlist('images'):
                 PostImage.objects.create(post=post, image=image)
+            
+            # Create notifications for all users except the author
+            users = User.objects.exclude(id=request.user.id)
+            for user in users:
+                Notification.objects.create(
+                    user=user,
+                    message=f"새 게시글: {post.title}",
+                    related_post=post
+                )
                 
             return redirect('post_detail', pk=post.pk)
     else:
@@ -109,6 +121,7 @@ def post_remove(request, pk):
     return redirect('post_list')
 
 @csrf_exempt
+@login_required
 def add_comment_to_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
@@ -118,6 +131,14 @@ def add_comment_to_post(request, pk):
             comment.post = post
             comment.approved_comment = True  # Auto-approve comments
             comment.save()
+            
+            # Create notification for post author
+            if request.user != post.author:
+                Notification.objects.create(
+                    user=post.author,
+                    message=f"{request.user.username}님이 댓글을 작성했습니다: {post.title}",
+                    related_post=post
+                )
     return redirect('post_detail', pk=post.pk)
 
 @csrf_exempt
@@ -136,6 +157,7 @@ def comment_remove(request, pk):
     return redirect('post_detail', pk=post_pk)
 
 @csrf_exempt
+@login_required
 def category_posts(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     posts = Post.objects.filter(category=category, published_date__lte=timezone.now()).order_by('-published_date')
@@ -143,6 +165,7 @@ def category_posts(request, category_id):
     return render(request, 'blog/post_list.html', {'posts': posts, 'categories': categories, 'category': category})
 
 @csrf_exempt
+@login_required
 def search_results(request):
     query = request.GET.get('q', '')
     if query:
@@ -171,3 +194,28 @@ def category_settings(request, category_id):
         'enable_photo': category.enable_photo,
         'enable_time': category.enable_time
     })
+
+@login_required
+def notifications(request):
+    notifications = Notification.objects.filter(user=request.user)
+    unread_count = notifications.filter(is_read=False).count()
+    
+    return render(request, 'blog/notifications.html', {
+        'notifications': notifications,
+        'unread_count': unread_count
+    })
+
+@login_required
+def mark_notification_read(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, user=request.user)
+    notification.is_read = True
+    notification.save()
+    
+    if notification.related_post:
+        return redirect('post_detail', pk=notification.related_post.pk)
+    return redirect('notifications')
+
+@login_required
+def mark_all_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return redirect('notifications')

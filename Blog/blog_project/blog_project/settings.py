@@ -114,3 +114,8 @@ SECURE_SSL_REDIRECT = False  # Set to True in production
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 0  # Set to non-zero in production
+
+
+# Add these lines to the bottom of settings.py
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds (14 days * 24 hours * 60 minutes * 60 seconds)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False

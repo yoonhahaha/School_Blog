@@ -70,3 +70,19 @@ class Comment(models.Model):
     class Meta:
         verbose_name = '댓글'
         verbose_name_plural = '댓글'
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications', verbose_name='사용자')
+    message = models.CharField(max_length=255, verbose_name='메시지')
+    related_post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True, verbose_name='관련 게시글')
+    is_read = models.BooleanField(default=False, verbose_name='읽음 여부')
+    created_date = models.DateTimeField(default=timezone.now, verbose_name='생성일')
+    
+    class Meta:
+        ordering = ['-created_date']
+        verbose_name = '알림'
+        verbose_name_plural = '알림'
+        
+    def __str__(self):
+        return self.message

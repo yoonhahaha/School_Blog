@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Comment, Category, PostImage
+from .models import Post, Comment, Category, PostImage, Notification
 
 class PostImageInline(admin.TabularInline):
     model = PostImage
@@ -20,7 +20,13 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ('approved_comment', 'created_date')
     search_fields = ('author', 'text')
 
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'message', 'related_post', 'is_read', 'created_date')
+    list_filter = ('is_read', 'created_date')
+    search_fields = ('user__username', 'message')
+
 admin.site.register(Post, PostAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(PostImage)
+admin.site.register(Notification, NotificationAdmin)
