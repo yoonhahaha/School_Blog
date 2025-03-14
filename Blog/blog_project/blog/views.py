@@ -26,10 +26,11 @@ def post_detail(request, pk):
 @csrf_exempt
 @login_required
 def post_new(request):
-    # Before form validation
-    print("Content-Type:", request.headers.get('Content-Type', ''))
-    print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
+    # Debug information
+    print("Request method:", request.method)
     if request.method == "POST":
+        print("Content-Type:", request.headers.get('Content-Type', ''))
+        print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
         print("POST data keys:", request.POST.keys())
         print("FILES keys:", request.FILES.keys())
         for key in request.FILES:
@@ -61,8 +62,10 @@ def post_new(request):
                 post.save()
             
             # Save multiple images
-            for image in request.FILES.getlist('images'):
-                print(f"Processing image: {image}")
+            images = request.FILES.getlist('images')
+            print(f"Processing {len(images)} images")
+            for image in images:
+                print(f"Creating image: {image}")
                 PostImage.objects.create(post=post, image=image)
             
             # Create notifications for all users except the author
@@ -85,6 +88,8 @@ def post_new(request):
                 )
                 
             return redirect('post_detail', pk=post.pk)
+        else:
+            print("Form errors:", form.errors)
     else:
         form = PostForm()
     return render(request, 'blog/post_edit.html', {'form': form})
@@ -94,6 +99,13 @@ def post_new(request):
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
+        print("Content-Type:", request.headers.get('Content-Type', ''))
+        print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
+        print("POST data keys:", request.POST.keys())
+        print("FILES keys:", request.FILES.keys())
+        for key in request.FILES:
+            print(f"Files for {key}:", request.FILES.getlist(key))
+            
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
@@ -120,10 +132,15 @@ def post_edit(request, pk):
                 post.save()
             
             # Handle new image uploads
-            for image in request.FILES.getlist('images'):
+            images = request.FILES.getlist('images')
+            print(f"Processing {len(images)} images")
+            for image in images:
+                print(f"Creating image: {image}")
                 PostImage.objects.create(post=post, image=image)
                 
             return redirect('post_detail', pk=post.pk)
+        else:
+            print("Form errors:", form.errors)
     else:
         form = PostForm(instance=post)
     return render(request, 'blog/post_edit.html', {'form': form, 'post': post})

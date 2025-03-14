@@ -24,8 +24,8 @@
                 
                 {% if not form.instance.pk or form.instance.category.enable_photo %}
                 <div class="mb-3 photo-field">
-                    <label for="{{ form.images.id_for_label }}" class="form-label">이미지 (여러 장 선택 가능)</label>
-                    {{ form.images }}
+                    <label for="id_images" class="form-label">이미지 (여러 장 선택 가능)</label>
+                    <input type="file" name="images" id="id_images" multiple class="form-control">
                 </div>
                 {% endif %}
                 
