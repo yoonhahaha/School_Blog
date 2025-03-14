@@ -4,6 +4,11 @@ from .models import Post, Comment
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
     
+    def __init__(self, attrs=None):
+        attrs = attrs or {}
+        attrs['multiple'] = True
+        super().__init__(attrs)
+        
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         context['widget']['attrs']['multiple'] = True
@@ -15,13 +20,15 @@ class MultipleFileField(forms.FileField):
         super().__init__(*args, **kwargs)
 
     def clean(self, data, initial=None):
+        print(f"MultipleFileField clean method called with data type: {type(data)}")
         single_file_clean = super().clean
         if isinstance(data, (list, tuple)):
+            print(f"Processing list of files: {len(data)} items")
             result = [single_file_clean(d, initial) for d in data]
         else:
+            print(f"Processing single file: {data}")
             result = single_file_clean(data, initial)
         return result
-
 class PostForm(forms.ModelForm):
     images = MultipleFileField(
         required=False,
@@ -52,29 +59,29 @@ class PostForm(forms.ModelForm):
             'price': '가격',
         }
     
-def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    instance = kwargs.get('instance')
-    
-    # Get the current category (either from instance or initial data)
-    category = None
-    if instance and instance.pk:
-        category = instance.category
-    elif 'initial' in kwargs and 'category' in kwargs['initial']:
-        category_id = kwargs['initial']['category']
-        from .models import Category
-        try:
-            category = Category.objects.get(id=category_id)
-        except:
-            pass
-    
-    if category:
-        # Set appropriate input type for due_date based on enable_time setting
-        if not category.enable_time and 'due_date' in self.fields:
-            self.fields['due_date'].widget = forms.DateInput(
-                attrs={'class': 'form-control', 'type': 'date'}
-            )
-            self.fields['due_date'].label = '마감일'
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+        
+        # Get the current category (either from instance or initial data)
+        category = None
+        if instance and instance.pk:
+            category = instance.category
+        elif 'initial' in kwargs and 'category' in kwargs['initial']:
+            category_id = kwargs['initial']['category']
+            from .models import Category
+            try:
+                category = Category.objects.get(id=category_id)
+            except:
+                pass
+        
+        if category:
+            # Set appropriate input type for due_date based on enable_time setting
+            if not category.enable_time and 'due_date' in self.fields:
+                self.fields['due_date'].widget = forms.DateInput(
+                    attrs={'class': 'form-control', 'type': 'date'}
+                )
+                self.fields['due_date'].label = '마감일'
 
 class CommentForm(forms.ModelForm):
     class Meta:

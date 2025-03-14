@@ -26,7 +26,15 @@ def post_detail(request, pk):
 @csrf_exempt
 @login_required
 def post_new(request):
+    # Before form validation
+    print("Content-Type:", request.headers.get('Content-Type', ''))
+    print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
     if request.method == "POST":
+        print("POST data keys:", request.POST.keys())
+        print("FILES keys:", request.FILES.keys())
+        for key in request.FILES:
+            print(f"Files for {key}:", request.FILES.getlist(key))
+            
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
@@ -54,6 +62,7 @@ def post_new(request):
             
             # Save multiple images
             for image in request.FILES.getlist('images'):
+                print(f"Processing image: {image}")
                 PostImage.objects.create(post=post, image=image)
             
             # Create notifications for all users except the author
@@ -218,6 +227,7 @@ def category_settings(request, category_id):
         'enable_time': category.enable_time,
         'enable_price': category.enable_price
     })
+
 @login_required
 def notifications(request):
     notifications = Notification.objects.filter(user=request.user)
