@@ -9,6 +9,7 @@ class Category(models.Model):
     enable_due_date = models.BooleanField(default=True, verbose_name='마감일 활성화')
     enable_photo = models.BooleanField(default=True, verbose_name='사진 활성화')
     enable_time = models.BooleanField(default=True, verbose_name='시간 활성화')
+    enable_price = models.BooleanField(default=True, verbose_name='가격 활성화')
     
     def __str__(self):
         return self.name
@@ -28,6 +29,7 @@ class Post(models.Model):
     latitude = models.FloatField(blank=True, null=True, verbose_name='위도')
     longitude = models.FloatField(blank=True, null=True, verbose_name='경도')
     due_date = models.DateTimeField(blank=True, null=True, verbose_name='마감일시')
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name='가격')
     
     def publish(self):
         self.published_date = timezone.now()

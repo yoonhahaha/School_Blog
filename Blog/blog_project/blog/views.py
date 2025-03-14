@@ -215,9 +215,9 @@ def category_settings(request, category_id):
         'enable_map': category.enable_map,
         'enable_due_date': category.enable_due_date,
         'enable_photo': category.enable_photo,
-        'enable_time': category.enable_time
+        'enable_time': category.enable_time,
+        'enable_price': category.enable_price
     })
-
 @login_required
 def notifications(request):
     notifications = Notification.objects.filter(user=request.user)

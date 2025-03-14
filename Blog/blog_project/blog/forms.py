@@ -3,6 +3,11 @@ from .models import Post, Comment
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
+    
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context['widget']['attrs']['multiple'] = True
+        return context
 
 class MultipleFileField(forms.FileField):
     def __init__(self, *args, **kwargs):
@@ -26,7 +31,7 @@ class PostForm(forms.ModelForm):
     
     class Meta:
         model = Post
-        fields = ('category', 'title', 'text', 'latitude', 'longitude', 'due_date')
+        fields = ('category', 'title', 'text', 'latitude', 'longitude', 'due_date', 'price')
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'text': forms.Textarea(attrs={'class': 'form-control'}),
@@ -37,12 +42,14 @@ class PostForm(forms.ModelForm):
                 'class': 'form-control', 
                 'type': 'datetime-local'
             }),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
         labels = {
             'category': '카테고리',
             'title': '제목',
             'text': '내용',
             'due_date': '마감일시',
+            'price': '가격',
         }
     
 def __init__(self, *args, **kwargs):
@@ -68,6 +75,7 @@ def __init__(self, *args, **kwargs):
                 attrs={'class': 'form-control', 'type': 'date'}
             )
             self.fields['due_date'].label = '마감일'
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment

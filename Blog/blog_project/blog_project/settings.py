@@ -12,6 +12,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '192.168.0.101',
+    'class1-5.com'
 ]
 
 # Application definition
@@ -124,5 +125,10 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 WEBPUSH_SETTINGS = {
     "VAPID_PUBLIC_KEY": "BLO09Ii_zOAzx_zF37YdFUvKilK0T2-QTvgr4xMxULScwwVH7vx-G3nzB4ZQVyNbTTuLPfNz-I6pLnmQnBnT_2c",
     "VAPID_PRIVATE_KEY": "gB3aTRfIZrKSSyMFkA6yvigx2zFYjdxxYBuV8MKJ2HQ",
-    "VAPID_ADMIN_EMAIL": "admin@example.com"
+    "VAPID_ADMIN_EMAIL": "yoonhahaha05@gmail.com"
 }
+
+SESSION_COOKIE_DOMAIN = '.class1-5.com'
+
+CSRF_COOKIE_DOMAIN = None
+CSRF_TRUSTED_ORIGINS = ['https://class1-5.com']

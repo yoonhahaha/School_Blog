@@ -37,6 +37,14 @@
                 </div>
                 {% endif %}
                 
+                {% if not form.instance.pk or form.instance.category.enable_price %}
+                <div class="mb-3 price-field">
+                    <label for="{{ form.price.id_for_label }}" class="form-label">{{ form.price.label }}</label>
+                    {{ form.price }}
+                    <div class="form-text">물건의 가격을 설정해주세요.</div>
+                </div>
+                {% endif %}
+                
                 {% if not form.instance.pk or form.instance.category.enable_map %}
                 <!-- Location Map Section -->
                 <div class="mb-3 map-field">
@@ -181,6 +189,12 @@
                                 photoField.style.display = data.enable_photo ? 'block' : 'none';
                             }
                             
+                            // Toggle price field
+                            const priceField = document.querySelector('.price-field');
+                            if(priceField) {
+                                priceField.style.display = data.enable_price ? 'block' : 'none';
+                            }
+                            
                             // Toggle time display in due date field
                             const dueDateInput = document.getElementById('id_due_date');
                             if(dueDateInput && data.enable_due_date) {
@@ -211,5 +225,36 @@
             initMap();
         }
     };
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('id_images');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const fileCount = this.files.length;
+            const fileInfoText = document.createElement('div');
+            fileInfoText.className = 'mt-2 text-muted';
+            fileInfoText.innerHTML = `${fileCount}개의 파일이 선택됨: `;
+            
+            const fileList = document.createElement('ul');
+            for (let i = 0; i < fileCount; i++) {
+                const item = document.createElement('li');
+                item.textContent = this.files[i].name;
+                fileList.appendChild(item);
+            }
+            
+            fileInfoText.appendChild(fileList);
+            
+            // Remove any existing file info
+            const existingInfo = this.parentNode.querySelector('.mt-2.text-muted');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+            
+            this.parentNode.appendChild(fileInfoText);
+        });
+    }
+});
 </script>
 {% endblock %}
