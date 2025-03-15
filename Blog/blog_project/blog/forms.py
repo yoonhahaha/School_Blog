@@ -2,6 +2,7 @@ from django import forms
 from .models import Post, Comment
 
 class PostForm(forms.ModelForm):
+    # Remove the custom widget approach completely
     class Meta:
         model = Post
         fields = ('category', 'title', 'text', 'latitude', 'longitude', 'due_date', 'price')
@@ -48,6 +49,7 @@ class PostForm(forms.ModelForm):
                     attrs={'class': 'form-control', 'type': 'date'}
                 )
                 self.fields['due_date'].label = '마감일'
+
 
 class CommentForm(forms.ModelForm):
     class Meta:

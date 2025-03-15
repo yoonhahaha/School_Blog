@@ -7,7 +7,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='카테고리')
     enable_map = models.BooleanField(default=True, verbose_name='지도 활성화')
     enable_due_date = models.BooleanField(default=True, verbose_name='마감일 활성화')
-    enable_photo = models.BooleanField(default=False, verbose_name='사진 활성화')  # Changed to False
+    enable_photo = models.BooleanField(default=True, verbose_name='사진 활성화')
     enable_time = models.BooleanField(default=True, verbose_name='시간 활성화')
     enable_price = models.BooleanField(default=True, verbose_name='가격 활성화')
     
@@ -41,6 +41,18 @@ class Post(models.Model):
     class Meta:
         verbose_name = '게시글'
         verbose_name_plural = '게시글'
+
+
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', verbose_name='게시글')
+    image = models.ImageField(upload_to='blog/%Y/%m/%d/', verbose_name='이미지')
+    
+    def __str__(self):
+        return f"{self.post.title}의 이미지"
+    
+    class Meta:
+        verbose_name = '게시글 이미지'
+        verbose_name_plural = '게시글 이미지'
 
 
 class Comment(models.Model):

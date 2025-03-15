@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Post, Comment, Category, Notification, PushSubscription
+from .models import Post, Comment, Category, PostImage, Notification, PushSubscription
 from .forms import PostForm, CommentForm
 from django.db import models
 from django.http import JsonResponse
@@ -54,6 +54,11 @@ def post_new(request):
                     datetime.combine(post.due_date.date(), datetime.min.time())
                 )
                 post.save()
+            
+            # Save multiple images
+            if 'images' in request.FILES:
+                for image in request.FILES.getlist('images'):
+                    PostImage.objects.create(post=post, image=image)
             
             # Create notifications for all users except the author
             users = User.objects.exclude(id=request.user.id)
@@ -111,6 +116,11 @@ def post_edit(request, pk):
                     datetime.combine(post.due_date.date(), datetime.min.time())
                 )
                 post.save()
+            
+            # Save multiple images
+            if 'images' in request.FILES:
+                for image in request.FILES.getlist('images'):
+                    PostImage.objects.create(post=post, image=image)
                 
             return redirect('post_detail', pk=post.pk)
     else:
@@ -128,31 +138,20 @@ def post_publish(request, pk):
 @login_required
 def post_remove(request, pk):
     post = get_object_or_404(Post, pk=pk)
+    post.delete()
+    return redirect('post_list')
+
+@login_required
+def delete_post_image(request, pk):
+    image = get_object_or_404(PostImage, pk=pk)
+    post = image.post
     
-    # Check if user is admin or post author
-    if request.user.is_staff or request.user == post.author:
-        # Delete related notifications
-        Notification.objects.filter(related_post=post).delete()
-        
-        # Delete any existing post images (if the table still exists)
-        from django.db import connection
-        cursor = connection.cursor()
-        try:
-            cursor.execute("DELETE FROM blog_postimage WHERE post_id = %s", [post.id])
-        except:
-            pass
-        
-        # Delete comments
-        Comment.objects.filter(post=post).delete()
-        
-        # Now delete the post
-        post.delete()
-        return redirect('post_list')
-    else:
-        # User is not authorized to delete this post
-        from django.contrib import messages
-        messages.error(request, '삭제 권한이 없습니다.')
-        return redirect('post_detail', pk=post.pk)
+    # Check if the user is the author of the post
+    if request.user != post.author:
+        return JsonResponse({'status': 'error', 'message': '권한이 없습니다.'})
+    
+    image.delete()
+    return JsonResponse({'status': 'success'})
 
 @csrf_exempt
 @login_required
