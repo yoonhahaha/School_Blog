@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Post, Comment, Category, PostImage, Notification, PushSubscription
+from .models import Post, Comment, Category, Notification, PushSubscription
 from .forms import PostForm, CommentForm
 from django.db import models
 from django.http import JsonResponse
@@ -26,15 +26,8 @@ def post_detail(request, pk):
 @csrf_exempt
 @login_required
 def post_new(request):
-    # Debug information
-    print("Request method:", request.method)
     if request.method == "POST":
-        print("Content-Type:", request.headers.get('Content-Type', ''))
-        print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
-        print("POST data keys:", request.POST.keys())
-        print("FILES data:", {k: request.FILES.getlist(k) for k in request.FILES})
-        
-        form = PostForm(request.POST, request.FILES)
+        form = PostForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -61,12 +54,6 @@ def post_new(request):
                     datetime.combine(post.due_date.date(), datetime.min.time())
                 )
                 post.save()
-            
-            # Save multiple images
-            if 'images' in request.FILES:
-                for image in request.FILES.getlist('images'):
-                    print(f"Creating image: {image}")
-                    PostImage.objects.create(post=post, image=image)
             
             # Create notifications for all users except the author
             users = User.objects.exclude(id=request.user.id)
@@ -88,8 +75,6 @@ def post_new(request):
                 )
                 
             return redirect('post_detail', pk=post.pk)
-        else:
-            print("Form errors:", form.errors)
     else:
         form = PostForm()
     return render(request, 'blog/post_edit.html', {'form': form})
@@ -99,12 +84,7 @@ def post_new(request):
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
-        print("Content-Type:", request.headers.get('Content-Type', ''))
-        print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
-        print("POST data keys:", request.POST.keys())
-        print("FILES data:", {k: request.FILES.getlist(k) for k in request.FILES})
-        
-        form = PostForm(request.POST, request.FILES, instance=post)
+        form = PostForm(request.POST, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -131,16 +111,8 @@ def post_edit(request, pk):
                     datetime.combine(post.due_date.date(), datetime.min.time())
                 )
                 post.save()
-            
-            # Save multiple images
-            if 'images' in request.FILES:
-                for image in request.FILES.getlist('images'):
-                    print(f"Creating image: {image}")
-                    PostImage.objects.create(post=post, image=image)
                 
             return redirect('post_detail', pk=post.pk)
-        else:
-            print("Form errors:", form.errors)
     else:
         form = PostForm(instance=post)
     return render(request, 'blog/post_edit.html', {'form': form, 'post': post})
@@ -156,8 +128,31 @@ def post_publish(request, pk):
 @login_required
 def post_remove(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    post.delete()
-    return redirect('post_list')
+    
+    # Check if user is admin or post author
+    if request.user.is_staff or request.user == post.author:
+        # Delete related notifications
+        Notification.objects.filter(related_post=post).delete()
+        
+        # Delete any existing post images (if the table still exists)
+        from django.db import connection
+        cursor = connection.cursor()
+        try:
+            cursor.execute("DELETE FROM blog_postimage WHERE post_id = %s", [post.id])
+        except:
+            pass
+        
+        # Delete comments
+        Comment.objects.filter(post=post).delete()
+        
+        # Now delete the post
+        post.delete()
+        return redirect('post_list')
+    else:
+        # User is not authorized to delete this post
+        from django.contrib import messages
+        messages.error(request, '삭제 권한이 없습니다.')
+        return redirect('post_detail', pk=post.pk)
 
 @csrf_exempt
 @login_required

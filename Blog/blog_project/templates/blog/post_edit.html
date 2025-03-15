@@ -7,7 +7,7 @@
             <h2>{% if form.instance.pk %}게시글 수정{% else %}새 게시글{% endif %}</h2>
         </div>
         <div class="card-body">
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
@@ -21,13 +21,6 @@
                     <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
                     {{ form.text }}
                 </div>
-                
-                {% if not form.instance.pk or form.instance.category.enable_photo %}
-                <div class="mb-3 photo-field">
-                    <label for="id_images" class="form-label">이미지 (여러 장 선택 가능)</label>
-                    <input type="file" name="images" id="id_images" multiple class="form-control">
-                </div>
-                {% endif %}
                 
                 {% if not form.instance.pk or form.instance.category.enable_due_date %}
                 <div class="mb-3 due-date-field">
@@ -54,21 +47,6 @@
                     {{ form.latitude }}
                     {{ form.longitude }}
                 </div>
-                {% endif %}
-                
-                {% if post and post.category.enable_photo %}
-                    <div class="mb-4">
-                        <h5>현재 이미지</h5>
-                        <div class="row">
-                            {% for img in post.images.all %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ img.image.url }}" class="img-fluid rounded" alt="Post image">
-                                </div>
-                            {% empty %}
-                                <p>이미지가 없습니다.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
                 {% endif %}
                 
                 <div class="d-flex justify-content-between">
@@ -183,12 +161,6 @@
                                 dueDateField.style.display = data.enable_due_date ? 'block' : 'none';
                             }
                             
-                            // Toggle photo field
-                            const photoField = document.querySelector('.photo-field');
-                            if(photoField) {
-                                photoField.style.display = data.enable_photo ? 'block' : 'none';
-                            }
-                            
                             // Toggle price field
                             const priceField = document.querySelector('.price-field');
                             if(priceField) {
@@ -225,36 +197,5 @@
             initMap();
         }
     };
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.getElementById('id_images');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const fileCount = this.files.length;
-            const fileInfoText = document.createElement('div');
-            fileInfoText.className = 'mt-2 text-muted';
-            fileInfoText.innerHTML = `${fileCount}개의 파일이 선택됨: `;
-            
-            const fileList = document.createElement('ul');
-            for (let i = 0; i < fileCount; i++) {
-                const item = document.createElement('li');
-                item.textContent = this.files[i].name;
-                fileList.appendChild(item);
-            }
-            
-            fileInfoText.appendChild(fileList);
-            
-            // Remove any existing file info
-            const existingInfo = this.parentNode.querySelector('.mt-2.text-muted');
-            if (existingInfo) {
-                existingInfo.remove();
-            }
-            
-            this.parentNode.appendChild(fileInfoText);
-        });
-    }
-});
 </script>
 {% endblock %}

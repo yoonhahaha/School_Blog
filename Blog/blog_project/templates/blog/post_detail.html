@@ -15,33 +15,6 @@
             </div>
         </div>
         <div class="card-body">
-            <!-- Multiple images carousel -->
-            {% if post.images.all %}
-                <div id="postImagesCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-                    <div class="carousel-indicators">
-                        {% for img in post.images.all %}
-                            <button type="button" data-bs-target="#postImagesCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
-                                {% if forloop.first %}class="active"{% endif %}></button>
-                        {% endfor %}
-                    </div>
-                    <div class="carousel-inner">
-                        {% for img in post.images.all %}
-                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ post.title }} 이미지">
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">이전</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">다음</span>
-                    </button>
-                </div>
-            {% endif %}
-            
             <p class="card-text">{{ post.text|linebreaksbr }}</p>
             
             {% if post.due_date and post.category.enable_due_date %}
@@ -50,6 +23,12 @@
                 {% if post.category.enable_time %}
                 <br><i class="fas fa-clock"></i> 시간: {{ post.due_date|date:"H:i" }}
                 {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if post.price and post.category.enable_price %}
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-tag"></i> 가격: {{ post.price }}
             </div>
             {% endif %}
             
