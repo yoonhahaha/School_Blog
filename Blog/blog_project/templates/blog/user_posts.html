@@ -1,30 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="col-md-3">
-    <div class="card mb-4">
-        <div class="card-header">카테고리</div>
-        <div class="list-group list-group-flush">
-            <a href="{% url 'post_list' %}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
-                전체 보기
-            </a>
-            {% for cat in categories %}
-                <a href="{% url 'category_posts' cat.id %}" class="list-group-item list-group-item-action {% if category.id == cat.id %}active{% endif %}">
-                    {{ cat.name }}
-                </a>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<div class="col-md-9">
-    <h1 class="mb-4">
-        {% if category %}
-            {{ category.name }}
-        {% else %}
-            최근 게시글
-        {% endif %}
-    </h1>
+<div class="col-md-12">
+    <h1 class="mb-4">{{ display_user.username }}님의 게시글</h1>
     
     {% for post in posts %}
         <div class="card mb-4">
@@ -61,14 +39,7 @@
                 {% if post.latitude and post.longitude and post.category.enable_map %}
                     <p><i class="fas fa-map-marker-alt"></i> 위치 정보 있음</p>
                 {% endif %}
-                <!-- Add before the "더 읽기" button -->
-                {% if post.tags.all %}
-                <div class="mt-2">
-                    {% for tag in post.tags.all %}
-                        <a href="{% url 'tag_posts' tag.name %}" class="badge bg-info text-decoration-none me-1">#{{ tag.name }}</a>
-                    {% endfor %}
-                </div>
-                {% endif %}
+                
                 <a href="{% url 'post_detail' pk=post.pk %}" class="btn btn-sm btn-outline-primary">더 읽기</a>
                 <span class="text-muted ms-2">
                     <i class="fas fa-comment"></i> {{ post.comments.count }}
@@ -83,5 +54,7 @@
             게시글이 없습니다.
         </div>
     {% endfor %}
+    
+    <a href="{% url 'post_list' %}" class="btn btn-secondary mb-4">메인으로 돌아가기</a>
 </div>
 {% endblock %}

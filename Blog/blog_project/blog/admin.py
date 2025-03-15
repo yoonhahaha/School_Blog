@@ -2,10 +2,10 @@ from django.contrib import admin
 from django.db import connection
 from .models import Post, Comment, Category, Notification, PushSubscription
 
+# blog/admin.py - update CategoryAdmin class
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'enable_map', 'enable_due_date', 'enable_photo', 'enable_time', 'enable_price')
-    list_editable = ('enable_map', 'enable_due_date', 'enable_photo', 'enable_time', 'enable_price')
-
+    list_display = ('name', 'enable_map', 'enable_due_date', 'enable_photo', 'enable_time', 'enable_price', 'enable_tags')
+    list_editable = ('enable_map', 'enable_due_date', 'enable_photo', 'enable_time', 'enable_price', 'enable_tags')
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'created_date', 'published_date', 'due_date', 'price')
     list_filter = ('created_date', 'published_date', 'due_date', 'author')

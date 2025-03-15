@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Post, Comment, Category, PostImage, Notification, PushSubscription
+from .models import Post, Comment, Category, PostImage, Notification, PushSubscription, Tag
 from .forms import PostForm, CommentForm
 from django.db import models
 from django.http import JsonResponse
@@ -46,6 +46,15 @@ def post_new(request):
                     post.price = None
             
             post.save()
+
+            # Process tags if enabled for this category
+            if category and category.enable_tags:
+                tag_string = form.cleaned_data.get('tag_string', '')
+                if tag_string:
+                    tag_names = [t.strip() for t in tag_string.split(',') if t.strip()]
+                    for tag_name in tag_names:
+                        tag, created = Tag.objects.get_or_create(name=tag_name)
+                        post.tags.add(tag)
 
             # Handle time component based on category settings
             if category and not category.enable_time and post.due_date:
@@ -108,6 +117,16 @@ def post_edit(request, pk):
                     post.price = None
             
             post.save()
+            
+            # Process tags if enabled for this category
+            if category and category.enable_tags:
+                post.tags.clear()
+                tag_string = form.cleaned_data.get('tag_string', '')
+                if tag_string:
+                    tag_names = [t.strip() for t in tag_string.split(',') if t.strip()]
+                    for tag_name in tag_names:
+                        tag, created = Tag.objects.get_or_create(name=tag_name)
+                        post.tags.add(tag)
             
             # Handle time component based on category settings
             if category and not category.enable_time and post.due_date:
@@ -216,8 +235,9 @@ def search_results(request):
             models.Q(title__icontains=query) | 
             models.Q(text__icontains=query) |
             models.Q(author__username__icontains=query) |
-            models.Q(category__name__icontains=query)
-        ).filter(published_date__lte=timezone.now()).order_by('-published_date')
+            models.Q(category__name__icontains=query) |
+            models.Q(tags__name__icontains=query)
+        ).filter(published_date__lte=timezone.now()).distinct().order_by('-published_date')
     else:
         posts = Post.objects.none()
     
@@ -236,7 +256,8 @@ def category_settings(request, category_id):
         'enable_due_date': category.enable_due_date,
         'enable_photo': category.enable_photo,
         'enable_time': category.enable_time,
-        'enable_price': category.enable_price
+        'enable_price': category.enable_price,
+        'enable_tags': category.enable_tags
     })
 
 @login_required
@@ -309,3 +330,33 @@ def send_push_notification(user, title, body, url):
     except Exception as e:
         print(f"Push notification error: {str(e)}")
         return False
+
+@login_required
+def api_users(request):
+    """API endpoint to get users for @mention functionality"""
+    users = User.objects.all().values('id', 'username', 'first_name')
+    return JsonResponse(list(users), safe=False)
+
+@login_required
+def user_posts(request, username):
+    """Display posts by a specific user"""
+    user = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author=user, published_date__lte=timezone.now()).order_by('-published_date')
+    categories = Category.objects.all()
+    return render(request, 'blog/user_posts.html', {
+        'posts': posts, 
+        'categories': categories,
+        'display_user': user
+    })
+
+@login_required
+def tag_posts(request, tag_name):
+    """Display posts with a specific tag"""
+    tag = get_object_or_404(Tag, name=tag_name)
+    posts = Post.objects.filter(tags=tag, published_date__lte=timezone.now()).order_by('-published_date')
+    categories = Category.objects.all()
+    return render(request, 'blog/post_list.html', {
+        'posts': posts,
+        'categories': categories,
+        'tag': tag
+    })

@@ -21,4 +21,8 @@ urlpatterns = [
     path('notifications/mark-all-read/', views.mark_all_read, name='mark_all_read'),
     path('webpush/', include('webpush.urls')),
     path('subscribe/', views.subscribe_push, name='subscribe_push'),
+    path('api/users/', views.api_users, name='api_users'),
+    path('posts/by/<str:username>/', views.user_posts, name='user_posts'),
+    # blog/urls.py
+    path('tag/<str:tag_name>/', views.tag_posts, name='tag_posts'),
 ]

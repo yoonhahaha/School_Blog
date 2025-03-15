@@ -2,13 +2,21 @@ from django import forms
 from .models import Post, Comment
 
 class PostForm(forms.ModelForm):
-    # Remove the custom widget approach completely
+    tag_string = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '태그 (쉼표로 구분)'}),
+        label='태그'
+    )
+    
     class Meta:
         model = Post
         fields = ('category', 'title', 'text', 'latitude', 'longitude', 'due_date', 'price')
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'text': forms.Textarea(attrs={'class': 'form-control'}),
+            'text': forms.Textarea(attrs={
+                'class': 'form-control',
+                'data-mention': 'true'
+            }),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
@@ -34,6 +42,8 @@ class PostForm(forms.ModelForm):
         category = None
         if instance and instance.pk:
             category = instance.category
+            # Set initial value for tag_string if instance has tags
+            self.initial['tag_string'] = ', '.join([tag.name for tag in instance.tags.all()])
         elif 'initial' in kwargs and 'category' in kwargs['initial']:
             category_id = kwargs['initial']['category']
             from .models import Category
@@ -49,6 +59,10 @@ class PostForm(forms.ModelForm):
                     attrs={'class': 'form-control', 'type': 'date'}
                 )
                 self.fields['due_date'].label = '마감일'
+                
+            # Show/hide tag field based on category settings
+            if not category.enable_tags and 'tag_string' in self.fields:
+                self.fields['tag_string'].widget = forms.HiddenInput()
 
 
 class CommentForm(forms.ModelForm):

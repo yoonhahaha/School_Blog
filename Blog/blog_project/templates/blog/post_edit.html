@@ -22,6 +22,12 @@
                     {{ form.text }}
                 </div>
                 
+                <div class="mb-3 tag-field">
+                    <label for="id_tag_string" class="form-label">태그</label>
+                    {{ form.tag_string }}
+                    <div class="form-text">쉼표로 구분하여 여러 태그를 입력할 수 있습니다. 예: 문서, 사진, 중요</div>
+                </div>
+                
                 {% if not form.instance.pk or form.instance.category.enable_photo %}
                 <div class="mb-3 photo-field">
                     <label for="id_images" class="form-label">이미지 업로드</label>
@@ -200,6 +206,12 @@
                             const priceField = document.querySelector('.price-field');
                             if(priceField) {
                                 priceField.style.display = data.enable_price ? 'block' : 'none';
+                            }
+                            
+                            // Toggle tag field
+                            const tagField = document.querySelector('.tag-field');
+                            if(tagField) {
+                                tagField.style.display = data.enable_tags ? 'block' : 'none';
                             }
                             
                             // Toggle time display in due date field
