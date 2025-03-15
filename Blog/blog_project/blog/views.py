@@ -32,10 +32,8 @@ def post_new(request):
         print("Content-Type:", request.headers.get('Content-Type', ''))
         print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
         print("POST data keys:", request.POST.keys())
-        print("FILES keys:", request.FILES.keys())
-        for key in request.FILES:
-            print(f"Files for {key}:", request.FILES.getlist(key))
-            
+        print("FILES data:", {k: request.FILES.getlist(k) for k in request.FILES})
+        
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
@@ -50,8 +48,18 @@ def post_new(request):
                 
                 if not category.enable_due_date:
                     post.due_date = None
+                
+                if not category.enable_price:
+                    post.price = None
             
             post.save()
+
+
+            # In post_new and post_edit views:
+            # After post.save()
+            if 'images' in request.FILES:
+                for image in request.FILES.getlist('images'):
+                    PostImage.objects.create(post=post, image=image)
             
             # Handle time component based on category settings
             if category and not category.enable_time and post.due_date:
@@ -61,8 +69,31 @@ def post_new(request):
                 )
                 post.save()
             
-            # Save multiple images
+            # Debugging file upload
+            print("FILES keys:", request.FILES.keys())
+            for key in request.FILES:
+                print(f"File key: {key}")
+                print(f"File list for '{key}':", request.FILES.getlist(key))
+                print(f"Files count for '{key}':", len(request.FILES.getlist(key)))
+            
+            # Try multiple different approaches to get files
+            # Approach 1: Standard getlist
             images = request.FILES.getlist('images')
+            print(f"Approach 1 - Standard getlist found {len(images)} images")
+            
+            # Approach 2: Loop through multivalue dict
+            all_images = []
+            for key in request.FILES:
+                if key == 'images':  # Only process 'images' keys
+                    for img in request.FILES.getlist(key):
+                        all_images.append(img)
+            print(f"Approach 2 - MultiValueDict loop found {len(all_images)} images")
+            
+            # Use images from the more successful approach
+            if len(all_images) > len(images):
+                images = all_images
+            
+            # Save images
             print(f"Processing {len(images)} images")
             for image in images:
                 print(f"Creating image: {image}")
@@ -102,10 +133,8 @@ def post_edit(request, pk):
         print("Content-Type:", request.headers.get('Content-Type', ''))
         print("Is request multipart:", request.content_type.startswith('multipart/form-data'))
         print("POST data keys:", request.POST.keys())
-        print("FILES keys:", request.FILES.keys())
-        for key in request.FILES:
-            print(f"Files for {key}:", request.FILES.getlist(key))
-            
+        print("FILES data:", {k: request.FILES.getlist(k) for k in request.FILES})
+        
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
@@ -120,9 +149,16 @@ def post_edit(request, pk):
                 
                 if not category.enable_due_date:
                     post.due_date = None
+                
+                if not category.enable_price:
+                    post.price = None
             
             post.save()
-            
+            # In post_new and post_edit views:
+            # After post.save()
+            if 'images' in request.FILES:
+                for image in request.FILES.getlist('images'):
+                    PostImage.objects.create(post=post, image=image)
             # Handle time component based on category settings
             if category and not category.enable_time and post.due_date:
                 # Set time to midnight if time is disabled
@@ -131,8 +167,31 @@ def post_edit(request, pk):
                 )
                 post.save()
             
-            # Handle new image uploads
+            # Debugging file upload
+            print("FILES keys:", request.FILES.keys())
+            for key in request.FILES:
+                print(f"File key: {key}")
+                print(f"File list for '{key}':", request.FILES.getlist(key))
+                print(f"Files count for '{key}':", len(request.FILES.getlist(key)))
+            
+            # Try multiple different approaches to get files
+            # Approach 1: Standard getlist
             images = request.FILES.getlist('images')
+            print(f"Approach 1 - Standard getlist found {len(images)} images")
+            
+            # Approach 2: Loop through multivalue dict
+            all_images = []
+            for key in request.FILES:
+                if key == 'images':  # Only process 'images' keys
+                    for img in request.FILES.getlist(key):
+                        all_images.append(img)
+            print(f"Approach 2 - MultiValueDict loop found {len(all_images)} images")
+            
+            # Use images from the more successful approach
+            if len(all_images) > len(images):
+                images = all_images
+            
+            # Save images
             print(f"Processing {len(images)} images")
             for image in images:
                 print(f"Creating image: {image}")

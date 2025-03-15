@@ -132,3 +132,15 @@ SESSION_COOKIE_DOMAIN = '.class1-5.com'
 
 CSRF_COOKIE_DOMAIN = None
 CSRF_TRUSTED_ORIGINS = ['https://class1-5.com']
+
+
+# Add or update these settings in your settings.py
+
+# File Upload Settings
+# Add these settings to your settings.py file
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
